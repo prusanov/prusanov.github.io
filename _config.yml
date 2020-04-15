@@ -1,0 +1,18 @@
+
+title: Pavel Rusanov
+email: prusanov@gmail.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Research the world
+baseurl: "" # the subpath of your site, e.g. /blog
+url: ""     # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: p_rusanov
+github_username:  prusanov
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
