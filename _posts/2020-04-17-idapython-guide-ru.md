@@ -1,10 +1,3 @@
----
-layout: post
-title:  "[ru] Справочник по IDAPython "
-date:   2020-04-17 14:08:00 +0300
-categories: idapython guide
----
-
 # Справочник IDAPython
 
 Приведём текстовую версию шпаргалки. Эта информация может быть найдена в модулях IDAPython.
@@ -72,7 +65,7 @@ categories: idapython guide
   1001bb33
   Python>idc.get_func_name(here())	# имя функции для текущего адреса
   sub_1001BB20			
-  Python>idc.get_func_off_str(here())	# строковое представление текущего адресе
+  Python>idc.get_func_off_str(here())	# строковое представление текущего адреса
   sub_1001BB20+13						
   ```
 
