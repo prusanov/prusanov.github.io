@@ -1,3 +1,11 @@
+---
+layout: post
+title:  "[ru] Справочник по IDAPython"
+date:   2020-04-17 16:00:00 +0300
+categories: idapython guide
+---
+
+
 # Справочник IDAPython
 
 Приведём текстовую версию шпаргалки. Эта информация может быть найдена в модулях IDAPython.
