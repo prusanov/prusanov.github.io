@@ -1,0 +1,255 @@
+---
+layout: post
+title:  "[ru] Справочник по IDAPython "
+date:   2020-04-17 14:08:00 +0300
+categories: idapython guide
+---
+
+# Справочник IDAPython
+
+Приведём текстовую версию шпаргалки. Эта информация может быть найдена в модулях IDAPython.
+
+### Глобальные константы
+
+* `idc.BADADDR` -- при работе с адресами указывает на несуществующий адрес (`0xFFFFFFFF` для 32-битных систем);
+* `idc.BADSEL`  -- при работе с селекторами указывает на несуществующий селектор (`0xFFFFFFFF` для 32-битных систем);
+* `idc.MAXADDR` -- максимальный адрес (`0xFF000000` для 32-битных систем)
+* `idc.SIZE_MAX` -- максимальный размер (`0xFFFFFFFF` для 32-битных систем)
+
+
+
+### Сегменты (Segments)
+
+* `idc.get_segm_attr(ea, attr)`
+* `idc.set_segm_attr(ea, attr, value)`
+  * `idc.SEGATTR_START   =  0`      # starting address
+  * `idc.SEGATTR_END     =  4`      # ending address
+  * `idc.SEGATTR_ORGBASE = 16`
+  * `idc.SEGATTR_ALIGN   = 20`      # alignment
+  * `idc.SEGATTR_COMB    = 21`      # combination
+  * `idc.SEGATTR_PERM    = 22`      # permissions
+  * `idc.SEGATTR_BITNESS = 23`      # bitness (0: 16, 1: 32, 2: 64 bit segment)                          # Note: modifying the attribute directly does                          #       not lead to the reanalysis of the segment.                          #       Using set_segm_addressing() is more correct.
+  * `idc.SEGATTR_FLAGS   = 24`      # segment flags
+  * `idc.SEGATTR_SEL     = 28`      # segment selector
+  * `idc.SEGATTR_ES      = 32`      # default ES value
+  * `idc.SEGATTR_CS      = 36`      # default CS value
+  * `idc.SEGATTR_SS      = 40`      # default SS value
+  * `idc.SEGATTR_DS      = 44`      # default DS value
+  * `idc.SEGATTR_FS      = 48`      # default FS value
+  * `idc.SEGATTR_GS      = 52`      # default GS value
+  * `idc.SEGATTR_TYPE    = 96`      # segment type
+  * `idc.SEGATTR_COLOR   = 100`     # segment color
+* `idc.get_segm_start (ea)`
+* `idc.get_segm_end (ea)`
+* `idc.get_segm_name(ea)`
+* `idc.selector_by_name(name)`
+* `idautils.Segments()`
+* `idc.get_first_seg()`
+* `idc.get_next_seg(ea)`
+
+
+
+### Функции (Functions)
+
+При работе с функциями адрес *ea* представляет собой ***любой адрес***, который относится к функции.
+
+#### Итерация по функциям
+
+* `idautils.Functions(start_ea=None, end_ea=None)` -- генератор, возвращающий адреса начала функций в интервале *[start_ea, end_ea]*; без аргументов используются минимальный и максимальный адреса в текущей базе IDA;
+* `idc.get_prev_func(ea)` -- возвращает адрес начала предыдущей функции относительно заданного адреса *ea*, текущая функция не учитывается;
+* `idc.get_next_func(ea)` -- возвращает адрес начала следующей функции относительно заданного адреса *ea*; 
+
+#### Информация о функции
+
+* `idc.get_name_ea_simple(name)` -- возвращает адрес объекта по его строковому имени *name*;
+
+* `idc.get_func_name(ea)` -- возвращает *имя функции* по заданному адресу *ea*; если адрес не принадлежит функции, возвращает *пустую строку*;
+
+* `idc.get_func_off_str(ea)` - по заданному адресу *ea* возвращает строку формата *ИмяФункции_СмещениеАдреса* или пустую строку:
+
+  ```
+  Python>"%08x" % here()				# текущий адрес
+  1001bb33
+  Python>idc.get_func_name(here())	# имя функции для текущего адреса
+  sub_1001BB20			
+  Python>idc.get_func_off_str(here())	# строковое представление текущего адресе
+  sub_1001BB20+13						
+  ```
+
+  
+
+#### Управление функцией
+
+* `idc.add_func(ea, end=BADADDR)` -- создание функции в указанном диапазоне *[ea, end]*; аналогично созданию функции по клавише *P*;
+* `idc.set_func_end(ea, end)` -- установить адрес конца выбранной функции равным *end*; **важно**: адрес *end* не будет включён в функцию, это адрес, где функция именно заканчивается;
+* `idc.del_func(ea)`  -- удалить информацию о функции (остаётся только код без сформированной функции);
+* `idc.find_func_end(ea)` -- возвращает адрес конца выбранной функции;
+
+
+
+* `idc.get_func_flags(ea)` -- возвращает флаги функции;
+
+* `idc.set_func_flags(ea, flags)` -- устанавливает флаги функции:
+
+  * `idc.FUNC_NORET  = 1`  -- noreturn-функция (без выхода);
+
+  * `idc.FUNC_FAR        =  2` -- far-функция;
+
+  * `idc.FUNC_LIB          = 4` -- библиотечная функция;
+
+  * `idc.FUNC_STATIC    = 8` -- static-функция;
+
+  * `idc.FUNC_FRAME    = 16` -- функция использует указатель фрейма (base pointer, BP);
+
+  * `idc.FUNC_USERFAR   = 32` -- пользователь установил признак far-функции;
+
+  * `idc.FUNC_HIDDEN     = 64` -- свёрнутая (спрятанная функция), отображается обычно так:
+
+    `.text:1001B280     ; [00000341 BYTES: COLLAPSED FUNCTION sub_1001B280. PRESS CTRL-NUMPAD+ TO EXPAND]`;
+
+  * `idc.FUNC_THUNK       = 128` -- функция-обёртка (выполняет jump на другую функцию);
+
+  * `idc.FUNC_BOTTOMBP      = 256` -- указатель фрейма (BP) указывает на дно стека;
+
+  * `idc.FUNC_NORET_PENDING = 512` -- необходимо выполнить проверку функции на признак 'non-return';
+
+  * `idc.FUNC_SP_READY  = 1024` -- анализ указателя стека уже выполнен для данной функции      ;
+
+  * `idc.FUNC_PURGED_OK     = 16384` -- проверка поля 'argsize' была выполнена; этот бит управляется процессорным модулем;
+
+  * `idc.FUNC_TAIL          = 32768` -- признак хвостового чанка функции;
+
+    
+
+* `idc.get_func_cmt(ea, repeat)` -- возвращает комментарий функции; 
+
+* `idc.set_func_cmt(ea, comment, repeat)` -- устанавливает комментарий для функции;
+
+  * флаг ***repeat*** (0/1) указывает, какой комментарий требуется, обычный или повторяемый;
+
+
+
+* `idc.get_func_attr(ea, attr)` -- возвращает атрибут функции;
+* `idc.set_func_attr(ea, attr, val)` -- устанавливает атрибут функции;
+  * параметр ***attr*** может принимать значения:
+    * `FUNCATTR_START   =  0` -- адрес начала функции     # readonly: function start address
+    * `FUNCATTR_END     =  4` -- адрес конца функции (readonly)
+    * `FUNCATTR_FLAGS   =  8` -- флаги функции (см. выше)
+    * `FUNCATTR_FRAME   = 12` -- ID стекового фрейма функции (readonly)
+    * `FUNCATTR_FRSIZE  = 16` -- размер области локальных переменных функции в байтах (readonly)
+    * `FUNCATTR_FRREGS  = 20` -- размер области сохранённых регистров в байтах (readonly)
+    * `FUNCATTR_ARGSIZE = 24` -- размер области аргументов функции в байтах (readonly)
+    * `FUNCATTR_FPD     = 28` -- разница указателя кадра (frame pointer delta)
+    * `FUNCATTR_COLOR   = 32` -- цвет фона функции в формате 0xBBGGRR
+    * `FUNCATTR_OWNER   = 12` -- функция-владелец чанка функции (readonly)
+    * `FUNCATTR_REFQTY  = 16` -- количество родительских функций для чанка (readonly)
+
+
+
+#### Управление стеком и стековым фреймом
+
+* `idc.get_sp_delta(ea)` -- разница в значении указателя стека (SP) между текущим адресом и предыдущим;
+* `idc.get_spd(ea)` -- разница текущего значения указателя стека (SP) относительно начала функции;
+* `idc.add_user_stkpnt(ea, delta)` -- добавить разницу для указателя стека;
+
+
+
+* `idc.set_frame_size(ea, lvsize, frregs, args)` -- создать фрейм функции, где параметры:
+  * `lvsize` -- размер локальных переменных функции в байтах;
+  * `frregs` -- размер сохранённых регистров в байтах;
+  * `argsize` -- размер аргументов функции в байтах;
+* `idc.get_frame_size(ea)` -- размер фрейма функции;
+
+* `idc.get_frame_regs_size(ea)` -- размер сохранённых во фрейме регистров в байтах;
+* `idc.get_frame_lvar_size(ea)` -- размер локальных переменных в байтах;
+* `idc.get_frame_args_size(ea)` -- размер аргументов функции в байтах; 
+* `idc.get_frame_id(ea)` -- ID фрейма функции в текущей базе IDA.
+
+
+
+### Кросс-ссылки (Cross references / XRef)
+
+#### Константы
+
+IDA определяет два типа ссылок: кодовые ссылки и ссылки-данные. У каждого типа есть свои коды ссылок.
+
+Пользовательские ссылки должны иметь дополнительный битовый флаг:
+
+* `XREF_USER = 32` 
+
+##### Кодовые ссылки (Code refs)
+
+Подразумевают использование адреса в качестве адреса для выполнения
+
+* `fl_CF   = 16` -- far-вызов функции;
+* `fl_CN   = 17` -- near-вызов функции;
+* `fl_JF   = 18` -- far-jump на адрес;
+* `fl_JN   = 19` -- near-jump на адрес;
+* `fl_F    = 21` -- обычный поток кода (от инструкции к инструкции).
+
+##### Ссылки для данных (Data refs)
+
+Подразумевают использование адреса в качестве данных (адреса глобальных переменных, строк, функций)
+
+- `dr_O    = 1` -- получение адреса (Offset);
+- `dr_W    = 2` -- ссылка на запись (Write);
+- `dr_R    = 3` -- ссылка на чтение (Read);
+- `dr_T    = 4` -- текстовая ссылка (использование имени в определённых пользователем операндах);
+- `dr_I    = 5` -- информационная ссылка.
+
+#### Доступ к кросс-ссылкам
+
+* `idc.add_cref(from, to, flowtype)` -- добавить кодовую ссылку из адреса `from` на адрес `to`
+
+* `idc.del_cref(from, to, undef)` -- удалить кодовую ссылку. Параметр `undef` определяет, сделать ли адрес `to` неопределённым (undefined)
+
+* `idc.add_dref(from, to, datatype)` -- добавить data-ссылку
+
+* `idc.del_dref(from, to)` -- удалить data-ссылку 
+
+  
+
+* `idautils.CodeRefsTo(ea, flow)` -- генератор кодовых ссылок на указанный адрес; возвращает адреса типа `long`
+
+* `idautils.CodeRefsFrom(ea, flow)` -- генератор кодовых ссылок из указанного адреса; возвращает адреса типа `long`
+
+  * Параметр `flow` (0 / 1) определяет, учитывать ли ссылки, которые создаются простым переходом *от инструкции к инструкции*. То есть, если есть участок кода:
+
+    ```asm
+    .text:10022665 sub_10022665    proc near            ; CODE XREF: sub_100226E0+3↓p
+    .text:10022665                                      ; sub_10024574+5↓j
+    .text:10022665                 cmp     byte ptr [ecx+8], 0
+    .text:10022669                 mov     dword ptr [ecx], offset off_1002A710
+    .text:1002266F                 jz      short locret_1002267F
+    .text:10022671                 mov     ecx, [ecx+4]
+    .text:10022674                 test    ecx, ecx
+    .text:10022676                 jz      short locret_1002267F
+    .text:10022678                 push    ecx             ; hHeap
+    .text:10022679                 call    ds:HeapDestroy
+    .text:1002267F
+    .text:1002267F locret_1002267F:                     ; CODE XREF: sub_10022665+A↑j
+    .text:1002267F                                      ; sub_10022665+11↑j
+    .text:1002267F                 retn
+    .text:1002267F sub_10022665    endp
+    ```
+
+    То выполнение `idautils.CodeRefsTo(0x1002267F, flow=0)` вернёт **два** адреса: 0x1002266f и 
+
+    0x10022676. Если же выполнить `idautils.CodeRefsTo(0x1002267F, flow=1)`, то вернутся **три** адреса: 0x10022679, 0x1002266f, 0x10022676.
+
+* `idautils.DataRefsTo(ea)` -- генератор ссылок-данных на указанный адрес; возвращает адреса типа `long`
+
+* `idautils.DataRefsFrom(ea)` -- генератор ссылок-данных из указанного адреса; возвращает адреса типа `long`
+
+  
+
+* `idautils.XrefsTo(ea, flags=0)` -- генератор всех ссылок на указанный адрес; возвращает объекты типа `idautils._xref`
+
+* `idautils.XrefsFrom(ea, flags=0)` -- генератор всех ссылок на указанный адрес; возвращает объекты типа `idautils._xref`
+
+  * Объект типа `idautils._xref` имеет следующие атрибуты:
+    * `frm` --  адрес, ИЗ которого происходит ссылка (сокращение от _from_)
+    * `iscode` -- флаг (0 / 1), показывающий является ли ссылка кодовой
+    * `to` --  адрес, НА который происходит ссылка
+    * `type` -- код ссылки в рамках её типа (`fl_` или `dr_`)
+    * `user` -- флаг (0 / 1), показывающий, является ли ссылка пользовательской, созданной с использованием флага `XREF_USER`
