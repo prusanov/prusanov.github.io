@@ -8,7 +8,7 @@ categories: idapython guide
 
 # Справочник IDAPython
 
-Приведём текстовую версию шпаргалки. Эта информация может быть найдена в модулях IDAPython.
+Текстовая версия [шпаргалки](https://github.com/inforion/idapython-cheatsheet). Эта информация так или иначе может быть найдена в модулях IDAPython (в основном в *idc.py*)
 
 ### Глобальные константы
 
@@ -21,32 +21,43 @@ categories: idapython guide
 
 ### Сегменты (Segments)
 
-* `idc.get_segm_attr(ea, attr)`
-* `idc.set_segm_attr(ea, attr, value)`
-  * `idc.SEGATTR_START   =  0`      # starting address
-  * `idc.SEGATTR_END     =  4`      # ending address
-  * `idc.SEGATTR_ORGBASE = 16`
-  * `idc.SEGATTR_ALIGN   = 20`      # alignment
-  * `idc.SEGATTR_COMB    = 21`      # combination
-  * `idc.SEGATTR_PERM    = 22`      # permissions
-  * `idc.SEGATTR_BITNESS = 23`      # bitness (0: 16, 1: 32, 2: 64 bit segment)                          # Note: modifying the attribute directly does                          #       not lead to the reanalysis of the segment.                          #       Using set_segm_addressing() is more correct.
-  * `idc.SEGATTR_FLAGS   = 24`      # segment flags
-  * `idc.SEGATTR_SEL     = 28`      # segment selector
-  * `idc.SEGATTR_ES      = 32`      # default ES value
-  * `idc.SEGATTR_CS      = 36`      # default CS value
-  * `idc.SEGATTR_SS      = 40`      # default SS value
-  * `idc.SEGATTR_DS      = 44`      # default DS value
-  * `idc.SEGATTR_FS      = 48`      # default FS value
-  * `idc.SEGATTR_GS      = 52`      # default GS value
-  * `idc.SEGATTR_TYPE    = 96`      # segment type
-  * `idc.SEGATTR_COLOR   = 100`     # segment color
-* `idc.get_segm_start (ea)`
-* `idc.get_segm_end (ea)`
-* `idc.get_segm_name(ea)`
-* `idc.selector_by_name(name)`
-* `idautils.Segments()`
-* `idc.get_first_seg()`
-* `idc.get_next_seg(ea)`
+#### Итерация по сегментам
+
+* `idautils.Segments()` -- генератор, возвращающий стартовые адреса сегментов;
+* `idc.get_first_seg()` -- возвращает адрес первого сегмента;
+* `idc.get_next_seg(ea)` -- возвращает адрес следующего сегмента относительно адреса *ea*;
+
+
+
+* `idc.get_segm_attr(ea, attr)` -- возвращает значение атрибута сегмента;
+* `idc.set_segm_attr(ea, attr, value)` -- устанавливает значение атрибута сегмента;
+
+Доступны следующие ***атрибуты сегментов***:
+
+* `idc.SEGATTR_START   =  0` -- адрес начала сегмента;
+* `idc.SEGATTR_END     =  4` -- адрес конца сегмента;
+* `idc.SEGATTR_ORGBASE = 16` -- 
+* `idc.SEGATTR_ALIGN   = 20` -- выравнивание;
+* `idc.SEGATTR_COMB    = 21` -- комбинация (combination)
+* `idc.SEGATTR_PERM    = 22` -- разрешения;
+* `idc.SEGATTR_BITNESS = 23` -- разрядность;
+* `idc.SEGATTR_FLAGS   = 24` -- флаги;
+* `idc.SEGATTR_SEL     = 28` -- селектор сегмента;
+* `idc.SEGATTR_ES      = 32` -- значение регистра ES;
+* `idc.SEGATTR_CS      = 36` -- значение регистра CS;
+* `idc.SEGATTR_SS      = 40` -- значение регистра SS;
+* `idc.SEGATTR_DS      = 44` -- значение регистра DS;
+* `idc.SEGATTR_FS      = 48` -- значение регистра FS;
+* `idc.SEGATTR_GS      = 52` -- значение регистра GS;
+* `idc.SEGATTR_TYPE    = 96` -- тип сегмента;
+* `idc.SEGATTR_COLOR   = 100` -- цвет сегмента;
+
+
+
+* `idc.get_segm_start (ea)` -- возвращает адрес начала сегмента;
+* `idc.get_segm_end (ea)` -- возвращает адрес конца сегмента;
+* `idc.get_segm_name(ea)` -- возвращает имя сегмента;
+* `idc.selector_by_name(name)` -- возвращает селектор по имени.
 
 
 

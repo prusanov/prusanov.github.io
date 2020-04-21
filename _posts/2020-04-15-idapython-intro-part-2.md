@@ -17,7 +17,7 @@ categories: smartrhino tutorial
 
 ```python
 def get_function_arg(ea, narg):
-    ''' Поиск n-го аргумента функции (нумерация с нуля) '''
+    """ Поиск n-го аргумента функции (нумерация с нуля) """
     while True:
         ea = idc.prev_head(ea)
         if idc.get_operand_value(ea, 0) == narg:
@@ -35,9 +35,9 @@ def get_function_arg(ea, narg):
 
 ```python
 def get_function_arg_value(ea, narg):
-    ''' Поиск n-го аргумента функции (нумерация с нуля).
+    """ Поиск n-го аргумента функции (нумерация с нуля).
     	Аргументы передаются через стек.
-    '''
+    """
     i = 0
     while True:
         ea = idc.prev_head(ea)
@@ -99,7 +99,7 @@ import idautils
 PRINTF = 0x08006690
 
 def get_function_arg(ea, narg):
-    ''' Найти n-й аргумент функции '''
+    """ Найти n-й аргумент функции """
     while True:
         ea = idc.prev_head(ea)
         if idc.get_operand_value(ea, 0) == narg:
@@ -114,7 +114,7 @@ def get_function_arg(ea, narg):
 
 
 def get_func_name(str_log):
-    ''' Получить из строки лога имя функции '''
+    """ Получить из строки лога имя функции """
     words = str_log.split(' ')
     if len(words) > 1 and words[1].startswith("error"):
         return words[0]
@@ -123,7 +123,7 @@ def get_func_name(str_log):
 
 
 def rename_by_log_str(log_func):
-    ''' Переименовать функции, которые вызывают log_func со строкой логгирования '''
+    """ Переименовать функции, которые вызывают log_func со строкой логирования """
     for ea in idautils.CodeRefsTo(log_func, 0):
         arg = get_function_arg(ea, 0)
         if arg == idc.BADADDR:
@@ -191,7 +191,7 @@ BLUE = 0xF2D0AF
 PINK = 0xAFD0F2
 
 def colored_code():
-    ''' Раскрасить код и данные разными цветами в сегментах кода '''
+    """ Раскрасить код и данные разными цветами в сегментах кода """
 
     code_segmnets = filter(lambda segm: \
                           idc.get_segm_attr(segm, SEGATTR_TYPE) == SEG_CODE,\
